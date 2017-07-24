@@ -1,0 +1,7 @@
+// Sample Config File
+{
+    "screen" : [0,0],
+    "framerate" : 24,
+    "layers" : [],
+    "story" : []
+}
