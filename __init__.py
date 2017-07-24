@@ -1,2 +1,2 @@
-# Effects Module Init
+# MotionScript Module Init
 __all__ = []
