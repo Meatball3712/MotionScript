@@ -9,9 +9,9 @@ effects = {
     "fadein":fade.FadeIn,
     "fadeout" : fade.FadeOut,
     "pan":translate.Pan,
-    "zoom":translate.Zoom
+    "zoom":translate.Zoom,
+    "display":base.Display
 }
 
-def buildEffect(asset):
-    effects.get(asset["subtype"], base.display)(**asset)
-    return None
+def buildEffect(asset, logger):
+    return effects.get(asset["subtype"], base.Display)(logger=logger, **asset)

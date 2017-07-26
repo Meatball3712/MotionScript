@@ -17,7 +17,7 @@ class Effect:
 
     def __init__(self, asset, size, name, **kwargs):
         self.asset = asset
-        self.size = size
+        self.size = tuple(size)
         self.name = name
         self.effectName = kwargs.get("effectName", "base")
         self.logger = kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger().getChild("effect_%s" % self.effectName)
@@ -28,6 +28,7 @@ class Effect:
         self.duration = kwargs.get("duration", (self.end - self.start))
         self.end = self.end if self.end > self.start else self.start + self.duration
         self.current = self.start
+        self.loop = kwargs.get("loop", True)
 
         # Default Ease in and Ease out.
         self.applyEasing = kwargs.get("applyEasing", False)
@@ -37,7 +38,7 @@ class Effect:
         self.easing_p3 = 1
 
         # Validation
-        assert self.duration > 0, "Invalid duration for Effect %s" % self.name
+        assert self.duration > 0, "Invalid duration(%d) for Effect %s" % (self.duration, self.name)
         assert self.end > self.start, "Invalid start/end for Effect %s" % self.name
         assert isinstance(self.asset, MotionPrimative) or isinstance(self.asset, Effect), "Provided asset is not a valid Effect or MotionPrimative Object in Effect %s" % self.name
 
@@ -62,11 +63,15 @@ class Effect:
 
     def getNextFrame(self):
         """ The Base Effect simply returns the next image in the sequence on the correct canvas size """
+        self.logger.debug("Retrieving Frame %d from %s", self.current, self.name)
         self.current = (self.current+1)%self.duration if self.loop else self.current+1
-        return Image.new(self.size, "RGBA").paste(self.asset.getNextFrame())
+        asset = Image.new(size=self.size, mode="RGBA")
+        asset.paste(self.asset.getNextFrame())
+        assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
+        return asset
 
 
-class display(Effect):
+class Display(Effect):
     """ Just show the image in place - no modifications """
 
     def __init__(self, asset, size, name, **kwargs):

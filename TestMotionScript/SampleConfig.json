@@ -3,14 +3,30 @@
     "framerate" : 24,
     "story" : [
         {
-            "name":"exampleEvent",
+            "name":"StaticImage",
             "start":0,
             "end":24, 
+            "position":[0,0,0],
             "asset": {
                 "type"   : "effect",
                 "subtype" : "display",
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"RedBall", "type":"image", "path":"RedBall.png"
+                    "type":"primative", "subtype":"image", "name":"RedBall", "path":"RedBall.png"
+                }
+            }
+        },
+        {
+            "name":"PanImage",
+            "start":12,
+            "end":24,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "pan",
+                "start_pos":[100,100],
+                "end_pos":[500,500],
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"RedBall", "path":"RedBall.png"
                 }
             }
         }

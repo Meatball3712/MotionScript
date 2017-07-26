@@ -11,25 +11,31 @@ from MotionScriptConfig import *
 
 assetTypes = ("image", "animation")
 class MotionEvent:
-    def __init__(self, eventConfig):
+    def __init__(self, config, eventConfig, logger):
         self.name = eventConfig["name"]
         self.start = eventConfig["start"]
         self.end = eventConfig["end"]
-        self.asset = buildAsset(eventConfig["asset"])
-
+        self.position = eventConfig["position"]
+        self.config = config
+        self.logger = logger
+        self.asset = self.buildAssets(eventConfig["asset"])
+        
     def buildAssets(self, assetConfig):
         # Recursively build assets.
-        if assetConfig["type"]  == "image":
-            asset = MotionPrimative.ImageLayer(size=self.config.size, **layer)
-        elif assetConfig["type"] == "animation":
-            asset = MotionPrimative.AnimationLayer(size=self.config.size, **layer)
+        if assetConfig["type"]  == "primative" and assetConfig["subtype"] == "image":
+            asset = MotionPrimative.MotionImage(size=self.config.size, logger=self.logger, **assetConfig)
+        elif assetConfig["type"]  == "primative" and assetConfig["subtype"] == "animation":
+            asset = MotionPrimative.MotionAnimation(size=self.config.size, logger=self.logger, **assetConfig)
         else:
-            asset["asset"] = self.buildAssets(asset["asset"])
-            MotionEffects.buildEffect(asset)
+            assetConfig["size"] = self.config.size
+            assetConfig["start"] = assetConfig.get("start", self.start)
+            assetConfig["end"] = assetConfig.get("end", self.end)
+            assetConfig["asset"] = self.buildAssets(assetConfig["asset"])
+            asset = MotionEffects.buildEffect(assetConfig, logger = self.logger)
+        return asset
 
-            
-
-                
+    def getNextFrame(self):
+        return self.asset.getNextFrame()
 
 
 class MotionScript:
@@ -44,74 +50,89 @@ class MotionScript:
         else:
             self.logger.info("Config Validated")
 
-        self.size = self.config.get("size", (1920,1080))
-        self.layers = {}
+        self.size = self.config.size
+        self.duration = self.config.end-self.config.start
+        self.events = {}
         self.timeline = {}
         self.stage = []
         self.logger.info("MotionScript initialised")
-        self.build(self)
+        self.logger.debug("Debugging messages enabled")
+        self.build()
+        self.animate()
 
     def build(self):
         self.logger.info("Building Movie...")
         # Build Timeline
         for event in self.config.story:
             # Build Assets
-            event["asset"]
-            if not self.timeline.has_key(event["start"]):
-                self.timeline[event["start"]] = []
-            self.timeline[event["start"]].append(event)
+            e = MotionEvent(self.config, event, logger = self.logger)
+            self.events[e.name] = e
+            if not self.timeline.has_key(e.start):
+                self.timeline[e.start] = []
+            self.timeline[e.start].append(e.name)
 
-            if not self.timeline.has_key(event["end"]):
-                self.timeline[event["end"]] = []
-            self.timeline[event["end"]].append(event)
+            if not self.timeline.has_key(e.end):
+                self.timeline[e.end] = []
+            self.timeline[e.end].append(e.name)
 
         # Build Stage
         self.updateStage()
 
+        self.logger.info("Build Complete")
+
     def animate(self):
-        for frame in xrange(self.movieLength):
+        self.logger.info("Animating...")
+        for frame in xrange(self.duration):
+            self.logger.info("Composing Frame %d/%d", frame, self.duration)
             screen = Image.new(size=self.size, mode="RGBA",color=(0,0,0,255))
 
-            # Build list of layers by sorted z_index
-            layerDepths = {}
-            for layer in self.stage:
-                if not layerDepths.has_key(layer.position[2]):
-                    layerDepths[layer.position[2]] = []
-                layerDepths[layer.position[2]].append(layer)
-
-            ordered = layerDepths.keys()
-            ordered.sort()
-            for index in ordered:
-                for layer in layerDepths[index]:
-                    screen.paste(layer.getNextImage())
-                
             events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
             for event in events:
+                e = self.events[event]
                 # Exit any elements that have finished
-                if event["end"] > frame:
-                    self.exitStage(event["layerName"])
+                if e.end < frame:
+                    self.exitStage(event)
                 # Enter any new elements that are beginning
-                if event["start"] >= frame and event["end"] < frame:
-                    self.enterStage(event["layerName"])
+                if e.start >= frame and e.end > frame:
+                    self.enterStage(event)
+
+            # Build list of layers by sorted z_index
+            layers = {}
+            for event in self.stage:
+                e = self.events[event]
+                if not layers.has_key(e.position[2]):
+                    layers[e.position[2]] = []
+                layers[e.position[2]].append(e)
+
+            ordered = layers.keys()
+            ordered.sort()
+            for index in ordered:
+                for event in layers[index]:
+                    im = event.getNextFrame()
+                    assert isinstance(im, Image.Image), "Event Frame is type %s" % type(asset)
+                    screen.paste(im, box=(0,0,self.size[0], self.size[1]))
+                    fname = os.path.join(self.config.output, "frame_%04d.png" % frame)
+                    screen.save(fname, "PNG")
             
     def updateStage(self, frame=0):
         events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
         for event in events:
             # Exit any elements that have finished
-            if event["end"] > frame:
-                self.exitStage(event["layerName"])
+            e = self.events[event]
+            if e.end > frame:
+                self.exitStage(event)
             # Enter any new elements that are beginning
-            if event["start"] >= frame and event["end"] < frame:
-                self.enterStage(event["layerName"])
+            if e.start >= frame and e.end < frame:
+                self.enterStage(event)
 
-    def exitStage(self, layer):
+    def exitStage(self, event):
         """ Remove Layer from stage (No longer processing each frame) """
-        if layer in self.stage:
-            del self.stage[self.stage.index(layer)]
+        if event in self.stage:
+            del self.stage[self.stage.index(event)]
 
-    def enterStage(self, layer):
+    def enterStage(self, event):
         """ Add Layer to stage for processing next frame increment """
-        self.stage.append(layer)
+        self.stage.append(event)
 
 
 
