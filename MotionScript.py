@@ -4,110 +4,32 @@ import os, traceback
 import argparse
 import json
 from MotionLogger import buildDefaultLogger
-import MotionLayer
+import MotionPrimative
+import MotionEffects
 from PIL import Image
+from MotionScriptConfig import *
 
-# How to Assert
-#assert type("1") is int, "Type is not integer"
+assetTypes = ("image", "animation")
+class MotionEvent:
+    def __init__(self, eventConfig):
+        self.name = eventConfig["name"]
+        self.start = eventConfig["start"]
+        self.end = eventConfig["end"]
+        self.asset = buildAsset(eventConfig["asset"])
 
-class MotionScriptConfig:
-    """Instructions for building a movie"""
-    def __init__(self, configFile, **kwargs):
-        self.configFile = configFile
-        self.logger = (kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger()).getChild("Config")
-        self.valid = True
-        self.screenSize = (1920,1080)
-        self.framerate = 24
-        self.outPath = "C:\Temp\MotionScriptMovie"
-        self.layers = []
-        self.story = {}
-
-        self._autoIndex = 0
-        self._layerNames = []
-
-        self.load(configFile)
-
-    def _getAutoIndex(self):
-        temp = self._autoIndex
-        self._autoIndex += 1
-        return temp
-
-    def load(self, configFile):
-        self.logger.info("Loading Config File %s", self.configFile)
-        with open(configFile) as f:
-            # Parse the config file
-            config = json.load(f)
-
-        # Begin Checks.
-        self.screenSize = config.get("screenSize", self.screenSize)
-        self.framerate = config.get("framerate", 24)
-        
-        # Layers
-        for layer in config.get("layers", []):
-            self.parseLayer(layer)
-
-        # Script
-        # A list of events. Effects applied to Layers at times over durations
-        self._autoIndex = 0
-        story = config.get("story", [])
-        for event in story:
-            self.parseEvent(self, event)
-
-
-    def parseLayer(self, layer):
-        """Check an individual layer's config"""
-        # Minimum requirements for a layer.
-
-        # Layer Name - for identification purposes
-        if not layer.has_key("name"):
-            layer["name"] = "UnnamedLayer_%d" % self._getAutoIndex()
-        self._layerNames.append(layer["name"])
-
-        # Type - either image or animation
-        if not layer.has_key("type") or layer["type"] not in ('image', 'animation'):
-            self.logger.error("Invalid type defined for layer %s", layer["name"])
-            raise AttributeError("Bad Layer Config")
-
-        # Check Path
-        if not layer.has_key("path"):
-            self.logger.error("No Path Supplied in Layer Config - %s", layer["name"])
-            return False
-        elif layer["type"] == "image" and not os.path.isfile(layer["path"]):
-            self.logger.error("Image File does not exist - %s", layer["path"])
-            return False
-        elif layer["type"] == "animation" and not os.path.isdir(layer["path"]):
-            self.logger.error("Animation Path does not exist - %s", layer["path"])
-
-        self.layers.append(layer)
-        return True
-
-    def parseEvent(self, event):
-        """ Check that all requirements of an event exist """
-        #Event Name
-        if not event.has_key("name"):
-            event["name"] = "UnnamedEvent_%d" % self._getAutoIndex()
-
-        if not event.has_key("layerName") or event["layerName"] not in self._layerNames:
-            self.logger.error("Layer Name (%s) not defined for event %s", % event.get("layerName", ""), event["name"])
-            raise AttributeError("Bad Event Config")
-        
-        elif not event.has_key("start"): 
-            self.logger.error("No Start Time found for event %s", event["name"])
-            raise AttributeError("Bad Event Config")
-        
-        elif not event.has_key("end"):
-            self.logger.error("No End Time found for event %s", event["name"])
-            raise AttributeError("Bad Event Config")
-
-        elif not event.has_key("effect"):
-            self.logger.error("No effect set for event %s", event["name"])
-            raise AttributeError("Bad Event Config")
-
+    def buildAssets(self, assetConfig):
+        # Recursively build assets.
+        if assetConfig["type"]  == "image":
+            asset = MotionPrimative.ImageLayer(size=self.config.size, **layer)
+        elif assetConfig["type"] == "animation":
+            asset = MotionPrimative.AnimationLayer(size=self.config.size, **layer)
         else:
-            # Optional - check event specific attributes
-            if not self.story.has_key(event["start"])
-                self.story.append(event)
+            asset["asset"] = self.buildAssets(asset["asset"])
+            MotionEffects.buildEffect(asset)
+
             
+
+                
 
 
 class MotionScript:
@@ -117,38 +39,79 @@ class MotionScript:
         assert kwargs.has_key("config"), "config parameter not supplied"
         self.logger = kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger()
         self.config = MotionScriptConfig(kwargs["config"], logger=self.logger)
+        if not self.config.valid:
+            raise InvalidMotionScript("Config invalid")
+        else:
+            self.logger.info("Config Validated")
 
-        self.layers = []
+        self.size = self.config.get("size", (1920,1080))
+        self.layers = {}
+        self.timeline = {}
         self.stage = []
         self.logger.info("MotionScript initialised")
         self.build(self)
 
     def build(self):
         self.logger.info("Building Movie...")
+        # Build Timeline
+        for event in self.config.story:
+            # Build Assets
+            event["asset"]
+            if not self.timeline.has_key(event["start"]):
+                self.timeline[event["start"]] = []
+            self.timeline[event["start"]].append(event)
 
-        self.screen = Image.new
-        for layer in self.config.layers:
-            if layer["type"] == "image":
-                self.layers.append(MotionLayer.ImageLayer(**layer))
-            else:
-                self.layers.append(MotionLayer.AnimationLayer(**layer))
+            if not self.timeline.has_key(event["end"]):
+                self.timeline[event["end"]] = []
+            self.timeline[event["end"]].append(event)
 
-
-        for element in self.config.story:
-            pass
+        # Build Stage
+        self.updateStage()
 
     def animate(self):
-        for frame in self.movieLength:
-            events = self.story.get(frame, []) # Get all new events for this moment, and process the stage.
+        for frame in xrange(self.movieLength):
+            screen = Image.new(size=self.size, mode="RGBA",color=(0,0,0,255))
+
+            # Build list of layers by sorted z_index
+            layerDepths = {}
+            for layer in self.stage:
+                if not layerDepths.has_key(layer.position[2]):
+                    layerDepths[layer.position[2]] = []
+                layerDepths[layer.position[2]].append(layer)
+
+            ordered = layerDepths.keys()
+            ordered.sort()
+            for index in ordered:
+                for layer in layerDepths[index]:
+                    screen.paste(layer.getNextImage())
+                
+            events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
+            for event in events:
+                # Exit any elements that have finished
+                if event["end"] > frame:
+                    self.exitStage(event["layerName"])
+                # Enter any new elements that are beginning
+                if event["start"] >= frame and event["end"] < frame:
+                    self.enterStage(event["layerName"])
             
+    def updateStage(self, frame=0):
+        events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
+        for event in events:
+            # Exit any elements that have finished
+            if event["end"] > frame:
+                self.exitStage(event["layerName"])
+            # Enter any new elements that are beginning
+            if event["start"] >= frame and event["end"] < frame:
+                self.enterStage(event["layerName"])
 
     def exitStage(self, layer):
         """ Remove Layer from stage (No longer processing each frame) """
-        pass
+        if layer in self.stage:
+            del self.stage[self.stage.index(layer)]
 
     def enterStage(self, layer):
         """ Add Layer to stage for processing next frame increment """
-        pass
+        self.stage.append(layer)
 
 
 

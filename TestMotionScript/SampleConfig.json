@@ -1,0 +1,18 @@
+{
+    "size" : [1920,1080],
+    "framerate" : 24,
+    "story" : [
+        {
+            "name":"exampleEvent",
+            "start":0,
+            "end":24, 
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "display",
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"RedBall", "type":"image", "path":"RedBall.png"
+                }
+            }
+        }
+    ]
+}
