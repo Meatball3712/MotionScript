@@ -75,6 +75,7 @@ class MotionScript:
                 self.timeline[e.end] = []
             self.timeline[e.end].append(e.name)
 
+        self.logger.debug("Time line created:\n%s", str(self.timeline))
         # Build Stage
         self.updateStage()
 
@@ -89,11 +90,9 @@ class MotionScript:
             events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
             for event in events:
                 e = self.events[event]
-                # Exit any elements that have finished
-                if e.end < frame:
-                    self.exitStage(event)
+                self.logger.debug("Checking %s suitable for adding to stage: start=%d, end=%d", e.name, e.start, e.end)
                 # Enter any new elements that are beginning
-                if e.start >= frame and e.end > frame:
+                if frame >= e.start and frame < e.end:
                     self.enterStage(event)
 
             # Build list of layers by sorted z_index
@@ -110,9 +109,18 @@ class MotionScript:
                 for event in layers[index]:
                     im = event.getNextFrame()
                     assert isinstance(im, Image.Image), "Event Frame is type %s" % type(asset)
-                    screen.paste(im, box=(0,0,self.size[0], self.size[1]))
+                    screen = Image.alpha_composite(screen, im)
                     fname = os.path.join(self.config.output, "frame_%04d.png" % frame)
                     screen.save(fname, "PNG")
+
+            # Remove finished events
+            events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
+            for event in events:
+                e = self.events[event]
+                self.logger.debug("Checking %s suitable for removing from stage: start=%d, end=%d", e.name, e.start, e.end)
+                # Exit any elements that have finished
+                if frame >= e.end:
+                    self.exitStage(event)
             
     def updateStage(self, frame=0):
         events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
@@ -122,16 +130,18 @@ class MotionScript:
             if e.end > frame:
                 self.exitStage(event)
             # Enter any new elements that are beginning
-            if e.start >= frame and e.end < frame:
+            if e.start >= frame and e.end <= frame:
                 self.enterStage(event)
 
     def exitStage(self, event):
         """ Remove Layer from stage (No longer processing each frame) """
+        self.logger.debug("Removing %s from stage", event)
         if event in self.stage:
             del self.stage[self.stage.index(event)]
 
     def enterStage(self, event):
         """ Add Layer to stage for processing next frame increment """
+        self.logger.debug("Adding %s to stage", event)
         self.stage.append(event)
 
 
