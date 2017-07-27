@@ -108,7 +108,7 @@ class MotionScript:
             for index in ordered:
                 for event in layers[index]:
                     im = event.getNextFrame()
-                    assert isinstance(im, Image.Image), "Event Frame is type %s" % type(asset)
+                    assert isinstance(im, Image.Image), "Event Frame is type %s" % type(im)
                     screen = Image.alpha_composite(screen, im)
                     fname = os.path.join(self.config.output, "frame_%04d.png" % frame)
                     screen.save(fname, "PNG")

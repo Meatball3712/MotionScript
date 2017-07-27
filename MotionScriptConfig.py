@@ -60,6 +60,8 @@ class MotionScriptConfig:
             index = self._getAutoIndex()
             while event.has_key(prefix % index): index = self._getAutoIndex() # Create Unique Names
             event["name"] = prefix % index
+        else:
+            event["name"] += "_%d" % self._getAutoIndex()
         
         if not event.has_key("start"): 
             self.logger.error("No Start Time found for event %s", event["name"])
@@ -88,6 +90,8 @@ class MotionScriptConfig:
         """ Parse Assets such as Effects or Images """
         if not asset.has_key("name"):
             asset["name"] = "UnnamedAsset" if parentName==None else parentName+".UnnamedAsset" 
+        else:
+            asset["name"] = asset["name"] if parentName==None else parentName+"."+asset["name"] 
         
         # Validate Types and Subtypes
         if not asset.has_key("type"):

@@ -14,26 +14,36 @@ class Pan(Effect):
         asset = self.asset.getNextFrame()
         if (self.duration) > 0:
             ef = self.getEasingFactor() if self.applyEasing else 1.0
-            X = int(round(1.0*(self.end_pos[0] - self.start_pos[0])/(self.end-self.start) * self.current * ef))
-            Y = int(round(1.0*(self.end_pos[1] - self.start_pos[1])/(self.end-self.start) * self.current * ef))
-            self.logger.debug("New Pan Coords %s", str((X,Y)))
-            asset = Image.new(size=self.size, mode="RGBA")
-            asset.paste(asset, (X,Y))
-        self.current = (self.current+1)%(self.end-self.start) if self.loop and (self.end-self.start) > 0 else self.current+1
+            X = int(round(self.start_pos[0] + 1.0*((self.end_pos[0] - self.start_pos[0])/self.duration) * self.current * ef))
+            Y = int(round(self.start_pos[1] + 1.0*((self.end_pos[1] - self.start_pos[1])/self.duration) * self.current * ef))
+            self.logger.debug("%s Pan Calculations: X=%d, Y=%d, ef=%f, current=%d", self.name, X, Y, ef, self.current)
+            newAsset = Image.new(size=self.size, mode="RGBA", color=(0,0,0,0))
+            newAsset.paste(asset, (X,Y))
+            asset = newAsset
+        self.current = (self.current+1)%(self.duration+1) if self.loop and self.duration > 0 else self.current+1
         assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
         return asset
-
-
     
 class Zoom(Effect):
     def __init__(self, **kwargs):
         Effect.__init__(self, effectName="Zoom", **kwargs)
-        self.start_scale = kwargs.get("start_scale", 1.0)
-        self.end_scale = kwargs.get("end_scale", 1.0)
+        self.start_scale = kwargs.get("start_scale", 1.0)*1.0
+        self.end_scale = kwargs.get("end_scale", 1.0)*1.0
 
     def getNextFrame(self):
-        self.current = (self.current+1)%(self.end-self.start) if self.loop and (self.end-self.start) > 0 else self.current+1
-        asset = Image.new(size=self.size, mode="RGBA")
-        asset.paste(self.asset.getNextFrame())
+        asset = self.asset.getNextFrame()
+        self.current = (self.current+1)%(self.duration+1) if self.loop and self.duration > 0 else self.current+1
+        ef = self.getEasingFactor() if self.applyEasing else 1.0
+        scale = 1.0*self.start_scale + 1.0*((self.end_scale-self.start_scale)/self.duration)*self.current*ef
+        width, height = asset.size
+        width = int(round(width*scale))
+        height = int(round(height*scale))
+        X = int(round(self.position[0] - width/2.0)) # New Center X
+        Y = int(round(self.position[1] - height/2.0))# New Center Y
+        self.logger.debug("%s Zoom Calculations: X=%d, Y=%d, Height=%d, Width=%d, ef=%f, current=%d", self.name, X, Y, width, height, ef, self.current)
+        resized = asset.resize( (width, height) )
+        newAsset = Image.new(size=self.size, mode="RGBA", color=(0,0,0,0))
+        newAsset.paste(resized, (X,Y))
+        asset = newAsset
         assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
-        return
+        return asset

@@ -21,21 +21,21 @@ class Effect:
         self.name = name
         self.effectName = kwargs.get("effectName", "base")
         self.logger = kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger().getChild("effect_%s" % self.effectName)
-
+        self.position = tuple(kwargs.get("position", [0,0]))
         # Timing - Requires start and duration or start and end.
         self.start = kwargs.get("start", 0)
         self.end = kwargs.get("end", 0)
         self.duration = kwargs.get("duration", (self.end - self.start))
         self.end = self.end if self.end > self.start else self.start + self.duration
-        self.current = self.start
+        self.current = 0
         self.loop = kwargs.get("loop", True)
 
         # Default Ease in and Ease out.
         self.applyEasing = kwargs.get("applyEasing", False)
-        self.easing_p0 = 0
-        self.easing_p1 = 0
-        self.easing_p2 = 1
-        self.easing_p3 = 1
+        self.easing_p0 = kwargs.get("easing_p0", 0)
+        self.easing_p1 = kwargs.get("easing_p1", 1)
+        self.easing_p2 = kwargs.get("easing_p2", 0)
+        self.easing_p3 = kwargs.get("easing_p3", 1)
 
         # Validation
         assert self.duration > 0, "Invalid duration(%d) for Effect %s" % (self.duration, self.name)
@@ -66,7 +66,7 @@ class Effect:
         self.logger.debug("Retrieving Frame %d from %s", self.current, self.name)
         self.current = (self.current+1)%self.duration if self.loop else self.current+1
         asset = Image.new(size=self.size, mode="RGBA")
-        asset.paste(self.asset.getNextFrame())
+        asset.paste(self.asset.getNextFrame(), box=(0,0))
         assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
         return asset
 

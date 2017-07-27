@@ -17,18 +17,51 @@
         },
         {
             "name":"PanImage",
-            "start":12,
+            "start":0,
             "end":24,
-            "position":[0,0,0],
+            "position":[0,0,1],
             "asset": {
                 "type"   : "effect",
                 "subtype" : "pan",
-                "start_pos":[100,100],
-                "end_pos":[500,500],
+                "start_pos":[0,100],
+                "end_pos":[1000,100],
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"RedBall", "path":"RedBall.png"
+                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png"
+                }
+            }
+        },
+        {
+            "name":"PanImage",
+            "start":0,
+            "end":24,
+            "position":[0,0,1],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "pan",
+                "start_pos":[0,200],
+                "end_pos":[1000,200],
+                "applyEasing" : true,
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png"
+                }
+            }
+        },
+        {
+            "name":"ZoomImage",
+            "start":18,
+            "end":24,
+            "position":[0,0,2],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "zoom",
+                "start_scale":1,
+                "end_scale":2,
+                "position":[960,540],
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png"
                 }
             }
         }
+
     ]
 }
