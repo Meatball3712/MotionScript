@@ -107,6 +107,8 @@ class Emitter(Effect):
         self.emitTimer = self.emitTimer % 1
         for n in xrange(numEmit):
             x = random.randint(self.sx, self.ex)
+            y = random.randint(self.sy, self.ey)
+            z = random.randint(self.sz, self.ez)
             p = Particle()
 
     def generateForce(self, particle, fx=0, fy=0, fz=0):
