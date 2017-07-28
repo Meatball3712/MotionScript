@@ -11,7 +11,7 @@
                 "type"   : "effect",
                 "subtype" : "display",
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"RedBall", "path":"RedBall.png"
+                    "type":"primative", "subtype":"image", "name":"RedBall", "path":"RedBall.png", "size":[96,96]
                 }
             }
         },
@@ -26,7 +26,7 @@
                 "start_pos":[0,100],
                 "end_pos":[1000,100],
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png"
+                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png", "size":[96,96]
                 }
             }
         },
@@ -42,7 +42,7 @@
                 "end_pos":[1000,200],
                 "applyEasing" : true,
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png"
+                    "type":"primative", "subtype":"image", "name":"BlueBall", "path":"BlueBall.png", "size":[96,96]
                 }
             }
         },
@@ -58,10 +58,36 @@
                 "end_scale":2,
                 "position":[960,540],
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png"
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[96,96]
+                }
+            }
+        },
+        {
+            "name":"Particles",
+            "start":0,
+            "end":24,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "particle",
+                "sx" : 0,
+                "sy" : 500,
+                "sz" : 1,
+                "ex" : 500,
+                "ey" : 700,
+                "ez" : 1,
+                "rate" : 1,
+                "preload" : 20,
+                "forceFunction" : "drift",
+                "particleSettings" : {
+                    "vy" : 0,
+                    "ay" : 10,
+                    "drag" : 10
+                },
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[5,5]
                 }
             }
         }
-
     ]
 }

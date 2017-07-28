@@ -23,11 +23,15 @@ class MotionEvent:
     def buildAssets(self, assetConfig):
         # Recursively build assets.
         if assetConfig["type"]  == "primative" and assetConfig["subtype"] == "image":
-            asset = MotionPrimative.MotionImage(size=self.config.size, logger=self.logger, **assetConfig)
+            assetConfig["size"]=assetConfig.get("size", self.config.size)
+            self.logger.debug("Building Image Primative %s", assetConfig["name"])
+            asset = MotionPrimative.MotionImage(logger=self.logger, **assetConfig)
         elif assetConfig["type"]  == "primative" and assetConfig["subtype"] == "animation":
+            self.logger.debug("Building Image Animation %s", assetConfig["name"])
             asset = MotionPrimative.MotionAnimation(size=self.config.size, logger=self.logger, **assetConfig)
         else:
-            assetConfig["size"] = self.config.size
+            self.logger.debug("Building %s Effect %s", assetConfig["subtype"], assetConfig["name"])
+            assetConfig["size"]=assetConfig.get("size", self.config.size)
             assetConfig["start"] = assetConfig.get("start", self.start)
             assetConfig["end"] = assetConfig.get("end", self.end)
             assetConfig["asset"] = self.buildAssets(assetConfig["asset"])
@@ -43,7 +47,7 @@ class MotionScript:
     def __init__(self, **kwargs):
         # Check valid config
         assert kwargs.has_key("config"), "config parameter not supplied"
-        self.logger = kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger()
+        self.logger = kwargs["logger"] if kwargs.has_key("logger") else buildDefaultLogger(debug=kwargs.get("debug", False), verbose=kwargs.get("verbose", False))
         self.config = MotionScriptConfig(kwargs["config"], logger=self.logger)
         if not self.config.valid:
             raise InvalidMotionScript("Config invalid")
@@ -84,7 +88,7 @@ class MotionScript:
     def animate(self):
         self.logger.info("Animating...")
         for frame in xrange(self.duration):
-            self.logger.info("Composing Frame %d/%d", frame, self.duration)
+            self.logger.info("\n\nComposing Frame %d/%d", frame, self.duration)
             screen = Image.new(size=self.size, mode="RGBA",color=(0,0,0,255))
 
             events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.

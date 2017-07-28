@@ -5,8 +5,6 @@ parentDir = os.path.dirname(currentDir)
 sys.path.insert(0,parentDir)
 from MotionLogger import buildDefaultLogger
 from MotionPrimative import MotionPrimative
-
-
 from PIL import Image
 
 class EffectConfigError(Exception):
@@ -65,15 +63,14 @@ class Effect:
         """ The Base Effect simply returns the next image in the sequence on the correct canvas size """
         self.logger.debug("Retrieving Frame %d from %s", self.current, self.name)
         self.current = (self.current+1)%self.duration if self.loop else self.current+1
-        asset = Image.new(size=self.size, mode="RGBA")
-        asset.paste(self.asset.getNextFrame(), box=(0,0))
-        assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
-        return asset
+        frame = Image.new(size=self.size, mode="RGBA")
+        frame.paste(self.asset.getNextFrame(), box=(0,0))
+        assert isinstance(frame, Image.Image), "frame is type %s" % type(frame)
+        return frame
 
 
 class Display(Effect):
     """ Just show the image in place - no modifications """
-
     def __init__(self, asset, size, name, **kwargs):
         Effect.__init__(self, asset=asset, size=size, name=name, effectName="display", **kwargs)
 

@@ -11,9 +11,10 @@ class MotionPrimative:
         self.name = kwargs.get("name", "")
         self.type = kwargs.get("type", "image")
         self.path = kwargs.get("path", "")
+        self.size = kwargs.get("size", None)
         self.preload = kwargs.get("preload", True)
         self.position = kwargs.get("position", [0,0,0]) # X,Y,Z positions. (Z determines draw order)
-        self.size = kwargs.get("size", (1920,1080)) # Really? Is this needed? XXX
+        self.size = kwargs["size"]
         self.assets = []
         self.current = 0
 
@@ -22,20 +23,22 @@ class MotionPrimative:
 
         def getNextFrame(self):
             self.current += 1
-            return self.copy()
-
+            return self.assets[0].copy()
 
 class MotionImage(MotionPrimative):
     """ A static Image """
     def __init__(self, **kwargs):
         MotionPrimative.__init__(self, **kwargs)
         self.cycle = kwargs.get("cycle", True)
-        self.assets.append(Image.open(self.path).convert("RGBA"))
+        asset_im = Image.open(self.path).convert("RGBA")
+        if self.size and asset_im.size != self.size:
+            asset_im = asset_im.resize(self.size)
+        self.assets.append(asset_im)
         self.logger.debug("Image Primative %s initialised", self.name)
 
     def getNextFrame(self):
         self.logger.debug("Retrieving Frame %d from %s", self.current, self.name)
-        asset = self.assets[0]
+        asset = self.assets[0].copy()
         assert isinstance(asset, Image.Image), "asset is type %s" % type(asset)
         return asset
 
@@ -50,7 +53,10 @@ class MotionAnimation(MotionPrimative):
         files = [x for x in os.listdir(self.path) if self.extension == "" or x[len(self.extension):] == self.extension]
         files.sort()
         for file in files:
-            self.assets.append(Image.open(os.path.join(self.path, file)).convert("RGBA")) # Maybe make a way to get this on demand rather than leaving it in memory.
+            asset_im = Image.open(os.path.join(self.path, file)).convert("RGBA")
+            if self.size and self.size != asset_im.size:
+                asset_im = asset_im.resize(self.size)
+            self.assets.append() # Maybe make a way to get this on demand rather than leaving it in memory.
         self.logger.debug("Animation Primative %s initialised", self.name)
             
     def getNextFrame(self):

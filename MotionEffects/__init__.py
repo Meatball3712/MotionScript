@@ -2,6 +2,7 @@
 import base
 import translate
 import fade
+import particles
 
 __all__ = ["base", "translate", "fade"]
 
@@ -10,7 +11,8 @@ effects = {
     "fadeout" : fade.FadeOut,
     "pan":translate.Pan,
     "zoom":translate.Zoom,
-    "display":base.Display
+    "display":base.Display,
+    "particle" : particles.Emitter
 }
 
 def buildEffect(asset, logger):

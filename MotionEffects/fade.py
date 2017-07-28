@@ -3,12 +3,16 @@ from base import Effect
 from PIL import Image
 import numpy as np
 
-def fadeImage(im, fadeFactor, size):
+def fadeImage(im, fadeFactor, size=None):
+    size = size if size else im.size
     arr = np.array(im) # Convert Image to Numpy Array
     alpha = arr[:,:,3].astype(float) # The alpha channel of all pixels currently in the image.
     alpha = np.rint(fadeFactor*alpha).astype(int) # Multiply by scaling factor and convert to ints.
+    alpha = Image.fromarray(alpha, mode="L")
     im.putalpha(alpha)
-    Image.new(size=size, mode="RGBA", color = (0,0,0,0)).paste(im, (0,0))
+    asset_im = Image.new(size=size, mode="RGBA", color = (0,0,0,0))
+    asset_im.paste(im, (0,0))
+    return asset_im
 
 class FadeIn(Effect):
     """ Fade in layer """

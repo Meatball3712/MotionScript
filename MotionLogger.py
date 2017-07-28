@@ -6,7 +6,10 @@ def buildDefaultLogger(verbose=False, debug=False):
         fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         ch = logging.StreamHandler()
         ch.setFormatter(fmt)
-        ch.setLevel(logging.DEBUG)
+        if verbose or debug:
+            ch.setLevel(logging.DEBUG)
+        else:
+            ch.setLevel(logging.INFO)
         logger.addHandler(ch)
         
         # debug
