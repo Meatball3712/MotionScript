@@ -1,0 +1,32 @@
+{
+    "size" : [1920,1080],
+    "framerate" : 24,
+    "story" : [
+        {
+            "name":"Particles",
+            "start":0,
+            "end":240,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "particle",
+                "sx" : -1920,
+                "sy" : -1180,
+                "sz" : 1,
+                "ex" : 3840,
+                "ey" : -1080,
+                "ez" : 3,
+                "rate" : 5,
+                "preload" : 20,
+                "forceFunction" : "drift",
+                "particleSettings" : {
+                    "gy" : 5,
+                    "drag" : 0.05
+                },
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[10,10]
+                }
+            }
+        }
+    ]
+}
