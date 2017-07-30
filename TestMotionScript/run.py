@@ -4,5 +4,5 @@ currentDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentDir = os.path.dirname(currentDir)
 sys.path.insert(0,parentDir)
 import MotionScript
-debug = False
-MS = MotionScript.MotionScript(verbose=debug, debug=debug, config="ParticleTest.json")
+debug = True
+MS = MotionScript.MotionScript(verbose=debug, debug=debug, config="dust.json")

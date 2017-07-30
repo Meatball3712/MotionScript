@@ -13,7 +13,7 @@ class MotionScriptConfig:
         self.valid = True
         self.size = (1920,1080)
         self.framerate = 24
-        self.output = "C:\Temp\MotionScriptMovie"
+        self.output = kwargs.get("output", "C:\Temp\MotionScriptMovie")
         self.story = []
         self.start = 0
         self.end = 0

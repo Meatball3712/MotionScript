@@ -81,7 +81,7 @@ class MotionScript:
 
         self.logger.debug("Time line created:\n%s", str(self.timeline))
         # Build Stage
-        self.updateStage()
+        #self.updateStage()
 
         self.logger.info("Build Complete")
 
@@ -121,7 +121,7 @@ class MotionScript:
             events = self.timeline.get(frame, []) # Get all new events for this moment, and process the stage.
             for event in events:
                 e = self.events[event]
-                self.logger.debug("Checking %s suitable for removing from stage: start=%d, end=%d", e.name, e.start, e.end)
+                self.logger.debug("Checking %s suitable for removing from stage: start=%d, end=%d, frame=%d", e.name, e.start, e.end, frame)
                 # Exit any elements that have finished
                 if frame >= e.end:
                     self.exitStage(event)
@@ -131,7 +131,7 @@ class MotionScript:
         for event in events:
             # Exit any elements that have finished
             e = self.events[event]
-            if e.end > frame:
+            if e.end < frame:
                 self.exitStage(event)
             # Enter any new elements that are beginning
             if e.start >= frame and e.end <= frame:

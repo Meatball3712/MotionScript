@@ -1,30 +1,32 @@
 {
     "size" : [1920,1080],
     "framerate" : 24,
+    "output" : "A:/Projects/MotionScriptMovie",
     "story" : [
         {
             "name":"Particles",
             "start":0,
-            "end":240,
+            "end":48,
             "position":[0,0,0],
             "asset": {
                 "type"   : "effect",
                 "subtype" : "particle",
-                "sx" : -1920,
-                "sy" : -1180,
-                "sz" : 1,
-                "ex" : 3840,
-                "ey" : -1080,
-                "ez" : 3,
-                "rate" : 5,
-                "preload" : 20,
+                "sx" : 0,
+                "sy" : 0,
+                "sz" : 0,
+                "ex" : 1920,
+                "ey" : 0,
+                "ez" : 12000,
+                "gx" : 0,
+                "gy" : 5,
+                "gz" : 0,
+                "drag" : 0.05,
+                "ttl":1000,
+                "rate" : 20,
+                "preload" : 1000,
                 "forceFunction" : "drift",
-                "particleSettings" : {
-                    "gy" : 5,
-                    "drag" : 0.05
-                },
                 "asset"  : {
-                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[10,10]
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[8,8]
                 }
             }
         }

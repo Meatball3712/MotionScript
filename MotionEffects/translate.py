@@ -35,12 +35,12 @@ class Zoom(Effect):
         self.current = (self.current+1)%(self.duration+1) if self.loop and self.duration > 0 else self.current+1
         ef = self.getEasingFactor() if self.applyEasing else 1.0
         scale = 1.0*self.start_scale + 1.0*((self.end_scale-self.start_scale)/self.duration)*self.current*ef
-        width, height = frame.size
+        width,height = frame.size
         width = int(round(width*scale))
         height = int(round(height*scale))
         X = int(round(self.position[0] - width/2.0)) # New Center X
         Y = int(round(self.position[1] - height/2.0))# New Center Y
-        self.logger.debug("%s Zoom Calculations: X=%d, Y=%d, Height=%d, Width=%d, ef=%f, current=%d", self.name, X, Y, width, height, ef, self.current)
+        self.logger.debug("%s Zoom Calculations: position=%s, X=%d, Y=%d, Height=%d, Width=%d, ef=%f, current=%d", self.name, str(self.position), X, Y, width, height, ef, self.current)
         resized = frame.resize( (width, height) )
         newFrame = Image.new(size=self.size, mode="RGBA", color=(0,0,0,0))
         newFrame.paste(resized, (X,Y))
