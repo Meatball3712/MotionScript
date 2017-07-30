@@ -1,0 +1,32 @@
+{
+    "size" : [1920,1080],
+    "framerate" : 24,
+    "output" : "SnowTest2",
+    "story" : [
+        {
+            "name":"Particles",
+            "start":0,
+            "end":480,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "particle",
+                "sx" : 0,
+                "sy" : -50,
+                "sz" : 0,
+                "ex" : 1920,
+                "ey" : -10,
+                "ez" : 9000,
+                "rate" : 5,
+                "gy" : 5,
+                "drag" : 0.05,
+                "ttl":1000,
+                "preload" : 20,
+                "forceFunction" : "drift",
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"dustMote", "path":"dustMote.png", "size":[10,10]
+                }
+            }
+        }
+    ]
+}

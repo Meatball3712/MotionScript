@@ -1,0 +1,36 @@
+{
+    "size" : [1920,1080],
+    "framerate" : 24,
+    "output" : "./MotionScriptMovie",
+    "story" : [
+        {
+            "name":"Particles",
+            "start":0,
+            "end":96,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "particle",
+                "sx" : 900,
+                "sy" : 500,
+                "sz" : -1500,
+                "ex" : 960,
+                "ey" : 540,
+                "ez" : -1500,
+                "gx" : 0,
+                "gy" : 0,
+                "gz" : 0,
+                "drag" : 0,
+                "ttc":12,
+                "ttl":48,
+                "ttd":12,
+                "rate" : 0.08,
+                "forceFunction" : "none",
+                "preload":24,
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"dustMote.png", "size":[8,8]
+                }
+            }
+        }
+    ]
+}
