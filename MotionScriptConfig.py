@@ -110,7 +110,7 @@ class MotionScriptConfig:
         elif asset["type"] == 'primative':
             if asset["subtype"] == 'image':
                 if not os.path.isfile(asset["path"]):
-                    self.logger.error("Image File does not exist - %s(%s)", asset["path"])
+                    self.logger.error("Image File does not exist - %s", asset["path"])
                     test = open("RedBall.png", "r")
                     sys.exit(1)
             elif asset["subtype"] == 'animation':

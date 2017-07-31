@@ -1,0 +1,35 @@
+{
+    "size" : [1920,1080],
+    "framerate" : 24,
+    "output" : "MagnetTest",
+    "story" : [
+        {
+            "name":"Particles",
+            "start":0,
+            "end":96,
+            "position":[0,0,0],
+            "asset": {
+                "type"   : "effect",
+                "subtype" : "particle",
+                "sx" : 0,
+                "sy" : 0,
+                "sz" : 0,
+                "ex" : 1920,
+                "ey" : 1080,
+                "ez" : 9000,
+                "rate" : 0.05,
+                "ms" : 1000000,
+                "mx" : 960,
+                "my" : 540,
+                "mz" : 2000,
+                "drag" : 0.05,
+                "ttl":1000,
+                "preload" : 100,
+                "forceFunction" : "none",
+                "asset"  : {
+                    "type":"primative", "subtype":"image", "name":"GreenBall", "path":"GreenBall.png", "size":[10,10]
+                }
+            }
+        }
+    ]
+}

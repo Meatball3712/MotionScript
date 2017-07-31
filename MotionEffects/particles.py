@@ -104,6 +104,12 @@ class Emitter(Effect):
         self.gy = float(kwargs.get("gy", 0))
         self.gz = float(kwargs.get("gz", 0))
 
+        # Set Magnetic Point
+        self.mx = float(kwargs.get("mx", 0)) # Magnetic X Coord
+        self.my = float(kwargs.get("mx", 0)) # Magnetic Y Coord
+        self.mz = float(kwargs.get("mx", 0)) # Magnetic Z Coord
+        self.ms = float(kwargs.get("ms", 0)) # Magnetic Strength
+
         # Force Functions over time.
         forceFunctionParameters = kwargs.get("forceFunctionParameters", {})
         forceFunctionParameters["mass"] = self.mass
@@ -138,7 +144,6 @@ class Emitter(Effect):
             aex = int(round(((self.ex - self.size[0]/2) * z/self.focalLength) + self.size[0]/2))
             asy = int(round(((self.sy - self.size[1]/2) * z/self.focalLength) + self.size[1]/2))
             aey = int(round(((self.ey - self.size[1]/2) * z/self.focalLength) + self.size[1]/2))
-            self.logger.debug("@ z=%d, bounds are %d, %d, %d, %d", z, asx, aex, asy, aey)
             x = random.randint(asx, aex)
             y = random.randint(asy, aey)
             
@@ -164,6 +169,8 @@ class Emitter(Effect):
             return []
         else:
             live = live[0][0]
+        
+        #initialise Array's
         workingSlice = self.particleArray[live:len(self.particles)]
         accellerationArray = self.forceFunction(workingSlice[:])
 
@@ -172,15 +179,45 @@ class Emitter(Effect):
         gravityArray[:,0].fill(self.gx)
         gravityArray[:,1].fill(self.gy)
         gravityArray[:,2].fill(self.gz)
-        # Apply Gravity
         np.add(accellerationArray,gravityArray, out=accellerationArray)
         
+        # Add Magnetic Force, if exists.
+        if self.ms != 0.0:
+            # fm = S * v/|v**2|
+            magneticArray = np.empty(accellerationArray.shape)
+            magneticArray[:,0].fill(self.mx)
+            magneticArray[:,1].fill(self.my)
+            magneticArray[:,2].fill(self.mz)
+
+            # v = m-p
+            magneticVector = np.subtract(magneticArray, workingSlice[:,:3])
+            
+            # Force = self.ms * v/sqrt(vx**2 + vy**2 + vz**2)
+            magnitude_sq = np.sum(np.power(magneticVector, 2), axis=1)
+            magnitude = np.sqrt(magnitude_sq)
+            magnitude = np.repeat(np.expand_dims(magnitude, axis=2), 3, axis=1)
+            np.divide(magneticVector, magnitude, out=magneticVector) # Unit Vector
+            print "Magnitude = %s" % str(magnitude[0]) 
+            magneticVector[magneticVector==np.inf] = 0.0 # Clear any inf points (No Force when at point).
+            magneticForce = np.expand_dims(magnitude_sq, axis=1)
+            magneticForce = np.repeat(magneticForce, 3, axis=1)
+            np.power(magnitude, -1, out=magneticForce)
+            #np.power(magneticForce, -1, out=magneticForce)
+            np.multiply(magneticForce, self.ms, out=magneticForce)
+            np.multiply(magneticVector, magneticForce, out=magneticForce)
+            np.divide(magneticForce, self.mass, out=magneticForce)
+            magneticForce[magneticForce>1000000] = 1000000
+            np.add(accellerationArray, magneticForce, out=accellerationArray)
+            # Set max on accelleration to 1000000
+            
+            print "Magnetic Accelleration Example = %s" % str(accellerationArray[0])
+
         # Calculate drag and apply force accordingly
-        #print "Current Vector = %f, %f, %f" % (self.vx, self.vy, self.vz)
         dragArray = (self.drag * (np.power(workingSlice[:,3:6], 2))) / self.mass
-        #print "Drag:", np.greater_equal(workingSlice[:,3:6], np.zeros([pCount-ttl, 3])).shape
         np.multiply(dragArray, -1.0, where=np.greater_equal(workingSlice[:,3:6], np.zeros([workingSlice.shape[0],3])), out=dragArray)
         accellerationArray += dragArray
+        
+        print "Accelleration Example = %s" % str(accellerationArray[0])
         return accellerationArray
 
     def step(self):
